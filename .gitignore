@@ -1,0 +1,6 @@
+*.pyc
+migrations
+env
+.idea
+__cache__
+data.sqlite

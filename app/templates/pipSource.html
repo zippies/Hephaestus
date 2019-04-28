@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}pip源码包添加{% endblock %}
+
+{% block body %}
+<div style="padding:10px">
+    <div class="col-lg-12">
+        <div style="background:white;text-align:center">
+            <a data-toggle="collapse" href="#usage" aria-expanded="false">如何使用内部pip源</a>
+        </div>
+        <div class="collapse" id="usage"><pre>修改或新增pip配置文件，内容如下。配置文件路径： ~/.pip/pip.conf<br>
+[global]
+index-url=http:///simple
+[install]
+trusted-host=</pre>
+        </div>
+    </div>
+    <div class="col-lg-12" style="margin-top:10px">
+        <div class="col-lg-5" style="background:white">
+            <iframe src="http://host/packages/" frameborder="0" width="100%" height="513px"></iframe>
+        </div>
+        <div class="col-lg-3">
+            <form id="addform" method="post">
+                <div>
+                    <textarea class="form-control" name="packages" id="packages" placeholder="添加第三方包，多个换行书写" rows="18"></textarea>
+                </div>
+                <div style="margin-top:5px">
+                    <ul class="list-group">
+                        <li class="list-group-item">上传本地包：</li>
+                        <li class="list-group-item"><input type="file" name="local" id="local"></li>
+                    </ul>
+
+                </div>
+                <div style="margin-top:5px">
+                    <button class="btn btn-default form-control" type="button" onclick="add()">确认添加</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-lg-4" style="background:white;height:513px">
+            <h2>Inner packages</h2>
+            <div><a style="float:right" href="http://team.caimi-inc.com/pages/viewpage.action?pageId=6257839" data-toggle="tooltip" data-placement="left" title="如何制作pip安装包?" target="_blank">如何制作pip安装包<span class="glyphicon glyphicon-question-sign"></span></a></div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td>包名</td>
+                        <td>作者</td>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for source in usersources %}
+                    <tr>
+                        <td>{{ source.packages }}</td>
+                        <td>{{ source.username }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        function add(){
+            if(!$("#packages").val() && !$("#local").val()){
+                layer.msg("输入不能为空")
+            }else{
+                var form = new FormData(document.getElementById("addform"));
+                $.ajax({
+                    url: "/pipsource/add",
+                    type: "post",
+                    data: form,
+                    contentType: false,
+                    processData: false,
+                    error: function(req){
+                        layer.msg(req.status)
+                    },
+                    success: function(data){
+                        if(data.result){
+                            layer.msg("添加成功!")
+                        }else{
+                            layer.msg("添加失败！" + data.errorMsg)
+                        }
+                    }
+                })
+            }
+
+        }
+    </script>
+{% endblock %}

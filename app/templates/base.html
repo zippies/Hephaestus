@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assist -{% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="/static/imgs/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/bower_components/layer/src/layer.js"></script>
+    {% block css %}
+    {% endblock %}
+</head>
+<body style="background-color:black">
+    {% block outside %}
+    {% endblock %}
+    <div class="container">
+        {% block body %}
+        {% endblock %}
+    </div>
+</body>
+    {% block script %}
+    {% endblock %}
+</html>

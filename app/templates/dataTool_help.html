@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}
+help
+{% endblock %}
+
+{% block css %}
+    <style>
+        .stressless{
+            color: darkgray;
+        }
+        .stress{
+            color:indianred;
+        }
+    </style>
+{% endblock %}
+
+{% block outside %}
+    <div>
+        <pre>
+可用对象：
+    <code class="stress">database</code> - 数据库连接对象：
+        table_obj = database.table(表名) 生成表对象，
+        table_obj.select(id='xx',**kwargs) 查询：<code class="stressless">select * from 表名 where id='xx' and ...</code>
+        table_obj.insert(id='xx',**kwargs) 插入：<code class="stressless">insert into 表名 where id='xx' and ...，</code>
+        table_obj.delete(id='xx',**kwargs) 删除：<code class="stressless">delete from 表名 where id='xx' and ...</code>
+        table_obj.maxRowValue(id) 返回max(id)值：<code class="stressless">只能用于int类型的字段</code>
+可用方法：
+    <code class="stress">autodata(type={type},samples=[],length=(7,10),age=None,sex=None)</code>
+    参数说明：
+        type:
+            phone：手机号
+            telecom：座机号
+            name：中文姓名
+            city：城市
+            college：大学
+            email：邮箱
+            chinese：中文
+            abc：英文字符
+            int：数字
+            float：浮点数字
+            symbol：特殊符号
+            idcard：身份证
+            sample：随机样本
+            mix：英文、中文、特殊字符、数字等的组合字符串
+            unique：唯一的字符串
+        samples:
+            只能与type为sample同时使用，提供样本列表，只取样本中的一个
+        length：
+            指定长度，不适用type为：phone、telecom、city、college、idcard、sample、unique
+        age：
+            只适用于type为idcard，指定生成的身份证年龄
+        sex：
+            只适用于type为idcard，指定生成的身份证性别
+        </pre>
+    </div>
+{% endblock %}

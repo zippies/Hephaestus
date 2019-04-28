@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: xmind
+Version: 0.1a0
+Summary: The offical XMind python SDK
+Home-page: https://github.com/xmindltd/xmind-sdk-python
+Author: Woody Ai
+Author-email: aiqi@xmind.net
+License: MIT
+Description: UNKNOWN
+Keywords: XMind,SDK,mind mapping
+Platform: UNKNOWN

@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}
+首页
+{% endblock %}
+
+{% block css %}
+    <style type="text/css">
+
+        .tool{
+            border-radius:25px;
+            padding:10px;
+            box-shadow:0 0 0 3px black inset;
+            font-family: 楷体;
+            animation: enter 0.5s;
+            opacity: 1;
+            height:300px;
+        }
+        .tool-title{
+            color: black;
+            font-weight: bold;
+        }
+        .tool-body {
+            height: 60%
+        }
+        .tool-foot {
+            margin-top:10px;
+            float:right;
+        }
+        @keyframes enter
+        {
+            0%   {opacity: 0}
+            10%  {opacity: 0.1}
+            20%  {opacity: 0.2}
+            30%  {opacity: 0.3}
+            40%  {opacity: 0.4}
+            50%  {opacity: 0.5}
+            60%  {opacity: 0.6}
+            70%  {opacity: 0.7}
+            80%  {opacity: 0.8}
+            90%  {opacity: 0.9}
+            100% {opacity: 1}
+        }
+    </style>
+{% endblock %}
+
+
+{% block body %}
+<div class="modal fade" tabindex="-1" role="dialog" id="addModel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">新增工具</h4>
+      </div>
+      <div class="modal-body">
+          <label for="add-name">名称</label>
+          <input type="text" id="add-name" class="form-control">
+          <label for="add-brief">简介</label>
+          <textarea name="brief" id="add-brief" cols="30" rows="4" class="form-control" placeholder="多行用符号&lt;br&gt;隔开"></textarea>
+          <label for="add-suitable">适用场景</label>
+          <textarea name="suitable" id="add-suitable" cols="30" rows="4" class="form-control" placeholder="多行用符号&lt;br&gt;隔开"></textarea>
+          <label for="add-href">链接</label>
+          <input type="text" id="add-href" class="form-control">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button id="add-save" type="button" class="btn btn-primary" onclick="add()" data-dismiss="modal">保存</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" id="editModel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">编辑工具</h4>
+      </div>
+      <div class="modal-body">
+          <label for="name">名称</label>
+          <input type="text" id="name" class="form-control">
+          <label for="brief">简介</label>
+          <textarea name="brief" id="brief" cols="30" rows="4" class="form-control" placeholder="多行用符号&lt;br&gt;隔开"></textarea>
+          <label for="suitable">适用场景</label>
+          <textarea name="suitable" id="suitable" cols="30" rows="4" class="form-control" placeholder="多行用符号&lt;br&gt;隔开"></textarea>
+          <label for="href">链接</label>
+          <input type="text" id="href" class="form-control">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button id="save" type="button" class="btn btn-primary" onclick="save()" data-dismiss="modal">保存</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+    <div style="text-align:center;color:{{ colors[0] }}">
+        <h1>快贷工具平台</h1><a href="javascript:;" data-toggle="modal" data-target="#addModel"><span class="glyphicon glyphicon-plus"></span></a>
+    </div>
+    <div class="col-lg-12 col-md-12" style="margin-top:20px">
+    {% for tool in tools %}
+        <div class="col-lg-4 col-md-4 tool" style="background-color:{{ colors[loop.index - 1] }};">
+            <div class="tool-title" style="text-align: center">
+                <h4 id="name-{{ tool.id }}">{{ tool.name }}</h4>
+                {% if current_user.id == tool.userid %}
+                <a href="javascript:;" onclick="edit({{ tool.id }})" style="float:right" data-toggle="modal" data-target="#editModel"><span class="glyphicon glyphicon-edit"></span></a>
+                {% endif %}
+                <hr>
+            </div>
+            <div class="tool-body">
+                <div>
+                    <h5>简介：{{ num }}</h5>
+                    <div style="margin-left:20px" id="brief-{{ tool.id }}">
+                    {% for bi in tool.brief_introductions %}
+                        {{ bi }} <br>
+                    {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <h5>适用场景：</h5>
+                    <div style="margin-left:20px" id="suitable-{{ tool.id }}">
+                    {% for st in tool.suitables %}
+                        {{ st }} <br>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="tool-foot">
+                <a href="{{ tool.href }}" class="btn btn-primary btn-sm" target="_blank" id="href-{{ tool.id }}">立即使用</a>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        function edit(id){
+            $.ajax({
+                url: "/tool/get/" + id,
+                error: function(req){
+                    layer.msg(req.status)
+                },
+                success: function(data){
+                    if(data.result){
+                        $("#name").val(data.name);
+                        $("#brief").val(data.briefs);
+                        $("#suitable").val(data.suitables);
+                        $("#href").val(data.href);
+                        sessionStorage.editid = id
+                    }else{
+                        layer.msg("获取数据失败" + data.errorMsg)
+                    }
+                }
+            })
+        }
+
+        function save(){
+            editid = sessionStorage.editid;
+            $.ajax({
+                url: "tool/edit/" + editid,
+                type: "post",
+                data: {
+                    name: $("#name").val(),
+                    briefs: $("#brief").val(),
+                    suitables: $("#suitable").val(),
+                    href: $("#href").val()
+                },
+                error: function(req){
+                    console.log(req.status)
+                },
+                success: function(data){
+                    if(data.result){
+                        layer.msg("保存成功");
+                        $("#name-" + editid).html($("#name").val());
+                        $("#brief-" + editid).html($("#brief").val());
+                        $("#suitable-" + editid).html($("#suitable").val());
+                        $("#href-" + editid).attr("href", $("#href").val())
+                    }else{
+                        layer.msg("保存失败" + data.errorMsg)
+                    }
+                }
+            })
+        }
+
+        function add(){
+            $.ajax({
+                url: "tool/add",
+                type: "post",
+                data: {
+                    name: $("#add-name").val(),
+                    briefs: $("#add-brief").val().split("<br>"),
+                    suitables: $("#add-suitable").val().split("<br>"),
+                    href: $("#add-href").val()
+                },
+                error: function(req){
+                    console.log(req.status)
+                },
+                success: function(data){
+                    if(data.result){
+                        window.location.reload()
+                    }else{
+                        layer.msg("新增失败" + data.errorMsg)
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}

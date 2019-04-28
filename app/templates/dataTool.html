@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+
+{% block title %}
+dataTool
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/bower_components/codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="/static/bower_components/codemirror/theme/monokai.css">
+<style>
+    .stress{
+        color:darkgray;
+    }
+</style>
+{% endblock %}
+
+
+{% block body %}
+<div style="text-align:center;color:{{ colors[0] }}">
+    <h4>DATATOOL</h4>
+</div>
+<div class="modal fade" tabindex="-1" role="dialog" id="addconnection">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">添加mysql连接配置</h4>
+      </div>
+      <div class="modal-body">
+        <form style="margin-top:10px" id="connectionForm" action="/dataTool/addConnection">
+            <span>连接别名:</span> <input style="width:80%" type="text" name="name"><br>
+            <hr>
+            <span class="label label-primary">host:</span> <input style="width:80%" type="text" name="host" value="host"><br>
+            <span class="label label-primary">port:</span> <input style="width:80%" type="text" name="port" value="3306"><br>
+            <span class="label label-primary">schema:</span> <input style="width:80%" type="text" name="schema" value="db"><br>
+            <span class="label label-primary">user:</span> <input style="width:80%" type="text" name="username" value="user"><br>
+            <span class="label label-primary">passwd:</span> <input style="width:80%" type="text" name="password" value="passwd">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" id="close">关闭</button>
+        <button type="button" class="btn btn-primary" id="saveConnectionBtn">保存</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<div id="upon" style="margin-top:10px;color:peru">
+    <span>选择数据库连接:</span>
+    <select name="databases" id="dbselect" onchange="changeDB()">
+        {% for db in dbs %}
+            <option value ="{{ db.id }}">{{ db.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#addconnection">添加连接</button>
+{#    <a href="javascript:;" onclick="javascript:$('#help').toggle()">帮助</a>#}
+
+
+    <div style="margin-top:10px">
+        <span class="label label-default">host:</span> <input type="text" id="host" value="{% if dbs %}{{ dbs[0].host }}{% endif %}">
+        <span class="label label-default">port:</span> <input type="text" id="port" value="{% if dbs %}{{ dbs[0].port }}{% endif %}">
+        <span class="label label-default">schema:</span> <input type="text" id="schema" value="{% if dbs %}{{ dbs[0].schema }}{% endif %}">
+        <span class="label label-default">user:</span> <input type="text" id="username" value="{% if dbs %}{{ dbs[0].username }}{% endif %}">
+        <span class="label label-default">passwd:</span> <input type="text" id="password" value="{% if dbs %}{{ dbs[0].password }}{% endif %}">
+    </div>
+</div>
+<div id="component">
+<div id="below" style="color:peru">
+    <hr>
+    <ul class="list-inline">
+        <li class="list-item"><a href="javascript:;" onclick="showhelp()">帮助</a></li>
+        <li class="list-item">选择已保存的模板:</li>
+        <li class="list-item">
+            <select name="codeTemplate" id="ctselect" onchange="changeTemplate()">
+                {% for ct in codes %}
+                    <option value ="{{ ct.id }}">{{ ct.name }}</option>
+                {% endfor %}
+            </select>
+        </li>
+        <li class="list-item">名称: <input type="text" name="name" id="templateName" placeholder="保存名称" value="{% if codes %}{{ codes[0].name }}{% endif %}"></li>
+        <li class="list-item"><button class="btn btn-danger btn-sm" id="save">保存</button></li>
+        <li class="list-item"><button class="btn btn-danger btn-sm" id="execute">执行</button></li>
+        <li class="list-item" style="float:right"><button class="btn btn-default btn-sm" id="delete">删除</button></li>
+
+{#        <li class="list-item" style="float:right"><button class="btn btn-danger btn-sm" id="delete">删除</button></li>#}
+    </ul>
+
+    <div style="margin-top:10px">
+        <textarea name="codearea" id="codearea" cols="30" rows="10" placeholder="在这里输入python代码">{% if codes %}{{ codes[0].content }}{% else %}app = database.table("approve_application")
+result_info = database.table("approve_result_info")
+#col = app.select(id=10).fetchone()     #查询一个:fetchone(),查询多个:fetchall()
+#print col.aid,col.uid               #打印查询记录的aid,uid
+start_aid = 300000000
+for i in range(13):
+    app.insert(
+        id = app.maxRowValue("id") + 1,                 #app表当前id最大值+1
+        aid = start_aid + i,
+        uid = app.maxRowValue("uid") + 1,
+        loan_type = 6,
+        idno = autodata(type="idcard",age=28,sex="男"),  #随机生成一个年龄为28岁的男性身份证号
+        status = 3,
+        realname = "随侯珠",
+        mobile = autodata(type="phone"),                #随机生成一个手机号
+        apply_time="2017-04-01 09:37:49",
+        node=6
+    )
+    result_info.insert(
+		id = result_info.maxRowValue("id") + 1,
+		flow_id = result_info.maxRowValue("flow_id") + 1,
+		aid = start_aid + i,
+        amount = autodata(type="int",length=(2,5)),     #随机一个长度在2-5之间的数字
+		result = 2,
+		processor = "随侯珠",
+        comment = autodata(type="mix",length=20),       #随机一个由中文、英文、特殊字符、数字组成的20个字符的字符串
+        rate_level = autodata(type="sample",samples=["MY3","MY10","MY7"])   #从samples里随机取值
+    )
+
+app.delete(realname="随侯珠")
+
+result_info.delete(processor="随侯珠")
+{% endif %}
+</textarea>
+        <div style="margin-top:10px">
+
+        </div>
+        <div style="margin-top:10px">
+{#            <button class="btn-xs" id="add"><span class="glyphicon glyphicon-plus"></span></button>#}
+        </div>
+    </div>
+
+</div>
+
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/bower_components/codemirror/lib/codemirror.js"></script>
+<script src="/static/bower_components/codemirror/mode/python/python.js"></script>
+<script src="/static/bower_components/codemirror/keymap/sublime.js"></script>
+<script src="/static/bower_components/codemirror/addon/display/placeholder.js"></script>
+<script>
+    var codemirror = CodeMirror.fromTextArea(document.getElementById("codearea"), {
+        indentUnit: 4,
+        lineNumbers: true,
+        smartIndent: true,
+        lineWrapping:true,
+        keyMap:"sublime",
+        mode: "python",
+        theme:"monokai"
+    });
+    codemirror.setSize('auto','400px');
+
+    $("#saveConnectionBtn").click(function(){
+        $.ajax({
+            url:"/dataTool/addConnection",
+            type:"post",
+            data:$("#connectionForm").serialize(),
+            error:function(request){
+                console.log(data);
+                layer.msg(request.status)
+            },
+            success:function(data){
+                console.log(data)
+                if(data && data.success == true){
+                    layer.msg("保存成功！");
+                    $("#dbselect").append("<option value ='"+ data.id +"'>" + data.name + "</option>")
+                }else{
+                    layer.msg(data.errorMsg)
+                }
+            }
+        })
+    });
+
+
+    $("#save").click(function(){
+        code = codemirror.getValue();
+        name = $("#templateName").val();
+        if(!code || !name){
+            layer.msg("'名称'或'代码内容' 不能为空")
+            return
+        }
+
+        save(false)
+    });
+
+
+    $("#execute").click(function(){
+        code = codemirror.getValue();
+        if(!code){
+            layer.msg("code 不能为空")
+            return
+        }
+        var index = layer.load(1, {
+          shade: [0.1,'#fff'] //0.1透明度的白色背景
+        });
+        $.ajax({
+            url:"/dataTool/execute",
+            type:"post",
+            data:{
+                "code":code,
+                "host":$("#host").val(),
+                "port":$("#port").val(),
+                "schema":$("#schema").val(),
+                "user":$("#username").val(),
+                "passwd":$("#password").val()
+            },
+            error:function(request){
+                console.log(data)
+                layer.msg(request.status)
+            },
+            success:function(data){
+                console.log(data);
+                layer.close(index);
+                if(data && data.success == true){
+                    layer.msg("执行成功！")
+                }else{
+                    layer.msg("执行失败！"+data.errorMsg)
+                }
+            }
+        })
+    });
+
+    $("#delete").click(function(){
+        layer.confirm('确定删除吗？', {
+            btn: ['确定','取消']
+        }, function(){
+            $.ajax({
+                url: "/dataTool/delete/" + $("#templateName").val(),
+                type: "delete",
+                error: function(req){
+                    layer.msg(req.status)
+                },
+                success: function(data){
+                    if(data && data.success == true){
+                        layer.msg("删除成功！")
+                        $("option[value='"+ data.id +"']").remove()
+                    }else{
+                        layer.msg("删除失败！"+data.errorMsg)
+                    }
+                }
+            })
+        }, function(){
+            console.log("取消")
+        });
+    })
+
+    function save(edit){
+        $.ajax({
+            url:"/dataTool/save",
+            type:"post",
+            data:{
+                "name": name,
+                "content": code,
+                "edit": edit
+            },
+            error:function(request){
+                console.log(data);
+                layer.msg(request.status)
+            },
+            success:function(data){
+                console.log(data)
+                if(data && data.success == true){
+                    layer.msg("保存成功！");
+                    $("#ctselect").append("<option value ='"+ data.id +"'>" + data.name + "</option>")
+                }else if(data && data.success == false && data.errorMsg == "exists"){
+                    layer.confirm('该记录已存在，是否更新内容', {
+                        btn: ['取消','确定']
+                    }, function(){
+                        layer.closeAll()
+                    }, function(){
+                        save(true)
+                    });
+                }else{
+                    layer.msg(data.errorMsg)
+                }
+            }
+        })
+    }
+
+
+    function showhelp(){
+        width = $(document).width()/2;
+        layer.open({
+            type:2,
+            title:"帮助",
+            shadeClose:true,
+            shade:false,
+            maxmin:false,
+            offset: ['0px',width/2+"px"],
+            area:[width+"px","100%"],
+            content:"/dataTool/help"
+        })
+    }
+
+    function changeDB(){
+        var select = document.getElementById("dbselect");
+        conn_id = select.options[select.selectedIndex].value;
+        $.ajax({
+            url:"/dataTool/getConnection?id="+conn_id,
+            type:"get",
+            error:function(request){
+                console.log(data)
+                layer.msg(request.status)
+            },
+            success:function(data){
+                if(data && data.success == true){
+                    $("#host").val(data.host);
+                    $("#port").val(data.port);
+                    $("#schema").val(data.schema);
+                    $("#username").val(data.username);
+                    $("#password").val(data.password);
+                }else{
+                    layer.msg("执行失败！"+data.errorMsg)
+                }
+            }
+        })
+    }
+
+    function changeTemplate(){
+        var select = document.getElementById("ctselect");
+        ct_id = select.options[select.selectedIndex].value;
+        $.ajax({
+            url:"/dataTool/getTemplate?id="+ct_id,
+            type:"get",
+            error:function(request){
+                console.log(data)
+                layer.msg(request.status)
+            },
+            success:function(data){
+                if(data && data.success == true){
+                    $("#templateName").val(data.name);
+                    codemirror.setValue(data.content);
+                }else{
+                    layer.msg("执行失败！"+data.errorMsg)
+                }
+            }
+        })
+    }
+</script>
+{% endblock %}

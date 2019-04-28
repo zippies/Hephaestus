@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}
+help
+{% endblock %}
+
+{% block css %}
+    <style>
+        .stress{
+            color: #ffb51a;
+        }
+        .stressless{
+            color:blue;
+        }
+        .explain{
+            color:#ff4438;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <code>使用如下接口获取测试数据</code>
+    <pre>
+    <code class="stressless">接口一: http://{{ ip }}:{{ port }}/databank/generate</code>
+    method: POST
+    body:
+        {
+            "data":{json格式的模板数据},
+            "count":3    <code class="explain">//指定返回的数据个数，不指定则根据模板生成对应个数，最多15个</code>
+        }
+    response:
+        {
+            "success":True|False,
+            "errorMsg":null,
+            "data":[]    <code class="explain">//返回的数据(列表)</code>
+        }
+
+    <code class="stressless">接口二: http://{{ ip }}:{{ port }}/autodata</code>
+    method: POST
+    body:
+        {
+            "type": phone|teltecom|name|city|college|email|chinese|abc|int|float|symbol|idcard|sample|mix|unique,
+            "length": 8|(7,10),                 <code class="explain">//可以指定固定长度或范围内随机长度</code>
+            "samples":["无银贷","有银贷"],        <code class="explain">//仅用于type为sample，取samples内随机一个值</code>
+            "age": 18,                          <code class="explain">//仅用于type为idcard，指定身份证年龄</code>
+            "sex": "男"|"女",                    <code class="explain">//仅用于type为idcard，指定身份证性别</code>
+            "count": 10                         <code class="explain">//指定需要获取的数据个数，不传默认为1</code>
+        }
+    response:
+        {
+            "success":True|False,
+            "errorMsg":null,
+            "data":""|[]                        <code class="explain">//返回的数据(当入参未指定count时，返回字符串，当入参指定count时，返回一个列表)</code>
+        }
+
+    <code class="stressless">接口三: http://{{ ip }}:{{ port }}/autodate</code>
+    method: POST
+    body:
+        {
+            "start": "2017-04-04 13:37:20"|"20170404",              <code class="explain">//指定起始时间</code>
+            "step": -2|2,                                           <code class="explain">//指定递增或递减的幅度，正整数表示递增，负整数表示递减</code>
+            "datetype": year|month|week|day|hour|minute|second,     <code class="explain">//指定递增或递减日期类型，枚举值</code>
+            "informat": "%Y%m%d %H%M%S",                            <code class="explain">//显示指定输入日期的格式，当无特殊格式时可不传该参数</code>
+            "outformat": "%Y-%m-%d %H:%M:%S",                       <code class="explain">//显示指定期望输出的日期格式,若未指定则默认与输入格式一致</code>
+            "count": 10                                             <code class="explain">//指定需要获取的数据个数</code>
+        }
+    response:
+        {
+            "success":True|False,
+            "errorMsg":null,
+            "data":[]                                               <code class="explain">//返回的数据(列表)</code>
+        }
+    </pre>
+    <hr>
+    <code>模板使用方法：</code>
+    <pre>
+    修改json中每个key-value中的value值，使用下面的方法描述需要生成数据的类型和格式：
+
+    <code class="stressless">autodata(type={type},samples=[],length=(7,10),age=None,sex=None)</code>
+    参数说明：
+        <code class="stress">type</code>:
+            phone：手机号
+            telecom：座机号
+            name：中文姓名
+            city：城市
+            college：大学
+            email：邮箱
+            chinese：中文
+            abc：英文字符
+            int：数字
+            float：浮点数字
+            symbol：特殊符号
+            idcard：身份证
+            sample：随机样本
+            mix：英文、中文、特殊字符、数字等的组合字符串
+            unique：唯一的字符串
+        <code class="stress">samples</code>:
+            只能与type为sample同时使用，提供样本列表，只取样本中的一个
+        <code class="stress">length</code>：
+            指定长度，不适用type为：phone、telecom、city、college、idcard、sample、unique，该参数主要用来做边界值测试
+        <code class="stress">age</code>：
+            只适用于type为idcard，指定生成的身份证年龄
+        <code class="stress">sex</code>：
+            只适用于type为idcard，指定生成的身份证性别
+
+    <code class="stressless">autodate(start,step,datetype,informat=None,outformat=None,flag=None)——用于生成列表内有递增、递减关系的时间字符串</code>
+    参数说明：
+        <code class="stress">start</code>：开始时间
+        <code class="stress">step</code>：递增或递减的幅度，如-1：递减1个单位时间，3：递增3个单位时间
+        <code class="stress">datetype</code>：指定递增递减的时间单位，支持：year、month、week、day、hour、minute、second
+        <code class="stress">informat</code>：显示指定开始时间的日期格式，如开始时间为2017-03-30，则informat为：%Y-%m-%d
+        <code class="stress">outformat</code>：指定输入字符串的时间格式
+        <code class="stress">flag</code>：该参数用于区别同一个模板字符串中使用的多个autodate，即有多个autodate时，每个autodate需要指定唯一的flag
+
+    <code class="stressless">autoint(start,step)</code>：
+    参数说明：
+        <code class="stress">start</code>：开始数字
+        <code class="stress">step</code>：递增或递减幅度，如start为100，step为2，则从100开始每次递增2
+    </pre>
+    <hr>
+    <div>
+       <code>示例数据模板：
+           <pre>
+{
+    "user_brief": {
+        "user_sid": "autodata(type='int',length=9)", <code>生成固定长度为9个的随机数字</code>
+        "phone": "autodata(type='phone')",  <code>生成随机手机号</code>
+        "gps": "autodata(type='float',length=(3,17)),autodata(type='float',length=(3,17))", <code>生成一组该节点长度分别为3，17和介于3-17之间随机长度浮点数的完整模板数据</code>
+        "gps_city": "杭州市", <code>写死的数据</code>
+        "gps_province": "浙江省",
+        "ov": "autodata(type='int',length=(3,10))", <code>生成一组该节点长度为3，10和介于3-10之间的完整模板数据</code>
+        "regtime": "autodate('2014-01-11',0,datetype='day',flag='regtime')",
+        "deviceNo": "autodata(type='int',length=(8,32))",
+        "education":"大学本科",
+        "job_type":"autodata(type='chinse',length=(0,20))",
+        "pre_apply_no": "autodata(type='unique')",
+        "source_channel": "Net_Sales_Pure_Online",
+        "sub_source_channel": "51GJJ"
+    },
+    "gjj_brief": {
+        "name": "公积金",
+        "company": "autodata(type='chinese',length=(8,32))",
+        "ID": "autodata(type='idcard')",
+        "location_all": "杭州公积金中心",
+        "city": "杭州",
+        "state": "autodata(type='sample',samples=['正常','缴存'])",
+        "base": "autodata(type='int',length=(1,4))",
+        "balance": "autodata(type='int',length=(0,6))",
+        "person_rate": "autodata(type='int',length=(0,2))",
+        "company_rate": "autodata(type='all',length=(0,2))",
+        "deposit_base": "autodata(type='int',length=(0,6))",
+        "record_date": "autodate('2014-01-11',0,datetype='month')",
+        "refresh_time": "autodata(type='int',length=(10,11))"
+    },
+    "gjj_detail": [
+        {
+          "company": "autodata(type='all',length=(8,32))",
+          "record_date": "autodate('2014-01-11',-1,datetype='month',flag='gjj')",
+          "op_type": "汇缴",
+          "record_month": "autodate('2014-01-11',-1,datetype='month',outformat='%Y%m',flag='gjj_rm')",
+          "amount": "autodata(type='int',length=(3,12))",
+          "balance": "autodata(type='int',length=(3,12))"
+        },20   <code class="explain">//此处20代表gjj_detail列表下根据子模板生成20条数据</code>
+    ],
+    "loan_brief": {
+        "con_no": "Cautodata(type='int',length=(10,12))",
+        "state": "autodata(type='int',length=1)",
+        "credit": "autodata(type='int',length=(0,12))",
+        "period": "autodata(type='int',length=(1,2))",
+        "rate": "autodata(type='int',length=(1,2))",
+        "warn_rate": "autodata(type='int',length=(1,2))",
+        "balance": "autodata(type='int',length=(1,2))",
+        "fund": "autodata(type='int',length=(1,2))",
+        "fund_date": "autodate('2014-01-11',0,datetype='month',outformat='%Y-%m-%d',flag='start')",
+        "bank": "autodata(type='int',length=(1,2))",
+        "phone": "autodata(type='int',length=(1,2))",
+        "address": "autodata(type='int',length=(1,2))",
+        "start_date": "autodate('2014-01-11',0,datetype='month',outformat='%Y-%m-%d',flag='start')",
+        "end_date": "autodate('2014-01-11',0,datetype='month',outformat='%Y-%m-%d',flag='end')",
+        "record_date": "autodate('2014-01-11',0,datetype='month',outformat='%Y-%m-%d',flag='record')",
+        "refresh_time": "autodata(type='int',length=(1,2))"
+    },
+    "loan_detail": [
+        {
+            "record_date": "autodate('2014-01-11',-1,datetype='month',outformat='%Y-%m-%d',flag='loan_record')",
+            "op_type": "autodata(type='int',length=(1,2))",
+            "record_month": "autodata(type='int',length=(1,2))",
+            "principle": "autodata(type='int',length=(1,2))",
+            "interest": "autodata(type='int',length=(1,2))",
+            "base": "autodata(type='int',length=(1,2))",
+            "balance": "autodata(type='int',length=(1,2))",
+            "bill_date": "autodate('2014-01-11',-1,datetype='month',outformat='%Y-%m-%d',flag='bill_date')"
+        },10    <code class="explain">//此处10代表loan_detail列表下根据子模板生成20条数据</code>
+    ],
+    "call_brief": {
+        "name": "autodata(type='name',length=(1,5))",
+        "ID": "autodata(type='idcard')",
+        "phone": "autodata(type='phone')",
+        "center": "autodata(type='all',length=(0,10))",
+        "time": "2016-09-22 19:08:27"
+    },
+    "call_detail": [
+        {
+          "start_time": "autodate('2014-01-11 00:00:00',-1,datetype='day',flag='call_detail_start_time')",
+          "use_time": "0autodata(type='int',length=1):0autodata(type='int',length=1):1autodata(type='int',length=1)",
+          "call_state": "autodata(type='sample',samples=['本地','外地'])",
+          "call_type": "autodata(type='sample',samples=['主叫','被叫'])",
+          "the_other": "autodata(type='phone')",
+          "self_place": "杭州"
+        },140   <code class="explain">//此处140代表call_detail列表下根据子模板生成20条数据</code>
+    ]
+}
+       </pre></code>
+    </div>
+{% endblock %}
